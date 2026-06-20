@@ -1,0 +1,317 @@
+# Bella Femme — Loja de Roupas Femininas
+Projeto acadêmico (Tech Academy) desenvolvido para atender à rubrica de avaliação:
+**Modelagem e Banco de Dados**, **Sistemas Operacionais e Redes**, **Desenvolvimento Web Moderna** e **Tech Forge**.
+
+---
+
+## 📁 Estrutura do projeto
+
+```
+loja-roupas-femininas/
+├── config/
+│   └── database.php       -> conexão PDO com o MySQL
+├── includes/
+│   ├── header.php          -> template do topo (navbar)
+│   ├── footer.php           -> template do rodapé
+│   └── functions.php        -> funções auxiliares (formatação, status de estoque...)
+├── css/
+│   └── style.css            -> identidade visual (cores, tipografia)
+├── img/
+│   └── *.svg                 -> imagens dos produtos (placeholders)
+├── sql/
+│   └── loja_roupas.sql       -> script de criação do banco + dados de exemplo
+├── index.php                 -> página inicial (carrossel + destaques)
+├── produtos.php              -> listagem de produtos com filtro/busca
+├── tech_forge.php            -> calculadora de pedidos (arrays e funções)
+└── .htaccess                  -> bloqueia listagem de diretórios
+```
+
+---
+
+## ✅ 1. Modelagem e Banco de Dados
+
+O banco `loja_roupas` tem **5 tabelas**:
+
+| Tabela | Chave Primária | Chave(s) Estrangeira(s) |
+|---|---|---|
+| `categorias` | `id_categoria` | — |
+| `produtos` | `id_produto` | `id_categoria` → `categorias` |
+| `clientes` | `id_cliente` | — |
+| `pedidos` | `id_pedido` | `id_cliente` → `clientes` |
+| `pedido_produtos` | `(id_pedido, id_produto)` | `id_pedido` → `pedidos`, `id_produto` → `produtos` |
+
+- **Mínimo de 3 tabelas** ✅ (temos 5)
+- **Chaves primárias** ✅ em todas as tabelas
+- **Pelo menos 1 chave estrangeira** ✅ (várias)
+- **Relacionamento N:N** ✅ → `pedido_produtos` é a tabela associativa entre `pedidos` e `produtos`
+  (um pedido pode ter vários produtos, e um produto pode estar em vários pedidos)
+
+📌 **DER (Diagrama de Entidade-Relacionamento):** foi gerado junto com esta resposta no chat
+(você pode salvar a imagem/print do diagrama e colocar no seu GitHub/README como evidência).
+
+### Como importar o banco
+
+1. Abra o **phpMyAdmin** (`http://localhost/phpmyadmin` ou `http://localhost:8080/phpmyadmin`, dependendo da porta configurada).
+2. Clique em **"Importar"**.
+3. Selecione o arquivo `sql/loja_roupas.sql`.
+4. Clique em **"Executar"**. O banco `loja_roupas` e as tabelas/dados serão criados automaticamente.
+
+---
+
+## ✅ 2. Desenvolvimento Web Moderna
+
+| Requisito | Onde está no projeto |
+|---|---|
+| Layout agradável e dinâmico com PHP | Todo o site usa Bootstrap + identidade visual própria (`css/style.css`) e conteúdo gerado dinamicamente (saudação por horário, ano no rodapé, produtos do banco) |
+| Template com PHP | `includes/header.php` e `includes/footer.php`, incluídos via `require_once` em todas as páginas |
+| Bootstrap + 3 componentes | Navbar, Carousel, Cards, Badges, Forms (mais de 3) |
+| Conexão com Banco de Dados | `config/database.php` (PDO + MySQL) |
+| Dados do banco exibidos na tela | `index.php` e `produtos.php` (produtos, categorias) |
+| Uso correto de IF, WHILE, FOREACH etc. | `index.php` (FOREACH), `produtos.php` (WHILE + IF/ELSE), `tech_forge.php` (IF/ELSEIF/ELSE) |
+
+---
+
+## ✅ 3. Tech Forge
+
+A página `tech_forge.php` foi feita **especificamente** para cobrir os 5 itens:
+
+1. **Array estruturado** → `$catalogo` guarda todos os produtos (nada de `$produto1`, `$produto2`...)
+2. **Funções de processamento** → `calcularDesconto()`, `calcularFrete()`
+3. **Parâmetros e `return`** → todas as funções recebem dados via parâmetro e devolvem com `return`, sem variáveis globais
+4. **Pesquisa/filtro** → `buscarProdutoPorCodigo()` (busca) e `filtrarPorPrecoMinimo()` (filtro)
+5. **Validação com IF/ELSE** → `validarPedido()` (array vazio, código inválido, quantidade ≤ 0, estoque insuficiente)
+
+Acesse `tech_forge.php` no menu **"Tech Forge"** para testar a calculadora.
+
+---
+
+## ⚙️ 4. Configurando no XAMPP (porta 8080 + bloqueio de listagem)
+
+### 4.1 Colocar o projeto no `htdocs`
+Copie a pasta `loja-roupas-femininas` para dentro de:
+```
+C:\xampp\htdocs\
+```
+Resultado final: `C:\xampp\htdocs\loja-roupas-femininas\index.php`
+
+### 4.2 Ajustar a conexão com o banco
+Abra `config/database.php` e confirme os dados (padrão do XAMPP):
+```php
+$host   = 'localhost';
+$dbname = 'loja_roupas';
+$usuario = 'root';
+$senha   = '';
+```
+
+### 4.3 Colocar a aplicação na porta 8080
+1. Abra o **XAMPP Control Panel** → **Apache** → **Config** → `httpd.conf`.
+2. Use **Ctrl+F** e localize a linha:
+   ```
+   Listen 80
+   ```
+   Altere para:
+   ```
+   Listen 8080
+   ```
+3. Procure também:
+   ```
+   ServerName localhost:80
+   ```
+   Altere para:
+   ```
+   ServerName localhost:8080
+   ```
+4. Salve o arquivo e **reinicie o Apache** no painel do XAMPP (Stop → Start).
+5. Acesse o site em:
+   ```
+   http://localhost:8080/loja-roupas-femininas/
+   ```
+
+> ⚠️ Se o Apache não iniciar, pode ser que a porta 8080 já esteja em uso (ex: Skype, outro servidor). Feche o programa que está usando a porta ou escolha outra (ex: 8081).
+
+### 4.4 Bloquear listagem de diretórios
+Já incluímos o arquivo `.htaccess` na raiz do projeto com:
+```apache
+Options -Indexes
+```
+Para que o `.htaccess` funcione, o Apache precisa permitir overrides. No mesmo `httpd.conf`, localize o bloco:
+```apache
+<Directory "C:/xampp/htdocs">
+    ...
+    AllowOverride All
+    ...
+</Directory>
+```
+Garanta que está como `AllowOverride All` (no XAMPP, geralmente já vem assim por padrão).
+Reinicie o Apache. Agora, se alguém acessar `http://localhost:8080/loja-roupas-femininas/img/`,
+vai receber **"Forbidden"** em vez de ver a lista de arquivos.
+
+---
+
+## 🌐 5. Itens de Rede que exigem 2 máquinas
+*(IP fixo do banco, DNS local, app e banco em máquinas separadas)*
+
+Esses 3 itens, por definição, **não podem ser totalmente atendidos com o XAMPP rodando solo
+em um único Windows**, porque exigem duas máquinas distintas se comunicando em rede.
+A solução mais simples e gratuita é usar **2 máquinas virtuais (VMs)** com o **VirtualBox**.
+
+> 💡 O código PHP que já criamos funciona tanto no XAMPP (Windows) quanto em Linux —
+> você só precisa ajustar o `$host` em `config/database.php` para o IP do servidor de banco.
+
+### 5.1 Visão geral da arquitetura
+
+```
+[VM "db-server"]                     [VM "web-server"]
+ Ubuntu Server                        Ubuntu Server
+ MySQL/MariaDB                        Apache + PHP
+ IP fixo: 192.168.56.20               escutando na porta 8080
+                                       hospeda o projeto
+                                       conecta no MySQL via 192.168.56.20
+
+[Seu PC Windows]
+ Acessa http://bellafemme.local:8080
+ (DNS local apontando para o IP da VM web-server)
+```
+
+### 5.2 Criando as VMs no VirtualBox
+1. Baixe e instale o **VirtualBox** (gratuito).
+2. Baixe a imagem **Ubuntu Server** (versão LTS).
+3. Crie **2 máquinas virtuais**: `db-server` e `web-server`.
+4. Na configuração de rede de **ambas** as VMs, use o adaptador **"Rede Interna"** (Internal Network)
+   com o mesmo nome (ex: `intnet`) — assim elas conseguem se comunicar entre si.
+   Opcionalmente, adicione um segundo adaptador em modo **Bridge** ou **NAT** para terem acesso à internet (para instalar pacotes).
+
+### 5.3 Configurando IP fixo na VM do banco (`db-server`)
+Edite o arquivo de rede (Ubuntu Server usa Netplan):
+```bash
+sudo nano /etc/netplan/00-installer-config.yaml
+```
+Configure assim (ajuste o nome da interface, ex: `enp0s8`):
+```yaml
+network:
+  version: 2
+  ethernets:
+    enp0s8:
+      addresses:
+        - 192.168.56.20/24
+```
+Aplique:
+```bash
+sudo netplan apply
+```
+✅ Isso atende **"O banco de dados possui IP Fixo"**.
+
+### 5.4 Instalando o MySQL no `db-server`
+```bash
+sudo apt update
+sudo apt install mysql-server -y
+```
+Permitir conexões externas — edite:
+```bash
+sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+```
+Altere:
+```
+bind-address = 0.0.0.0
+```
+Crie o usuário e o banco (substitua a senha):
+```sql
+sudo mysql
+CREATE DATABASE loja_roupas CHARACTER SET utf8mb4;
+CREATE USER 'bella'@'%' IDENTIFIED BY 'SuaSenhaForte123';
+GRANT ALL PRIVILEGES ON loja_roupas.* TO 'bella'@'%';
+FLUSH PRIVILEGES;
+EXIT;
+```
+Importe a estrutura:
+```bash
+mysql -u bella -p loja_roupas < loja_roupas.sql
+```
+Reinicie o serviço:
+```bash
+sudo systemctl restart mysql
+```
+✅ Isso (junto com o passo 5.5) atende **"A aplicação e banco de dados estão em máquinas separadas"**.
+
+### 5.5 Instalando Apache + PHP no `web-server`
+```bash
+sudo apt update
+sudo apt install apache2 php libapache2-mod-php php-mysql -y
+```
+Configure a porta 8080:
+```bash
+sudo nano /etc/apache2/ports.conf
+```
+Altere `Listen 80` para `Listen 8080`, e também no arquivo:
+```bash
+sudo nano /etc/apache2/sites-available/000-default.conf
+```
+Altere `<VirtualHost *:80>` para `<VirtualHost *:8080>`.
+
+Bloqueie a listagem de diretórios (já vem no `.htaccess`, mas garanta o `AllowOverride All`):
+```bash
+sudo nano /etc/apache2/apache2.conf
+```
+No bloco `<Directory /var/www/>`, deixe `AllowOverride All`.
+
+Reinicie o Apache:
+```bash
+sudo systemctl restart apache2
+```
+Copie o projeto para `/var/www/html/` e ajuste `config/database.php`:
+```php
+$host   = '192.168.56.20'; // IP fixo do db-server
+$dbname = 'loja_roupas';
+$usuario = 'bella';
+$senha   = 'SuaSenhaForte123';
+```
+
+### 5.6 Configurando o DNS local para a aplicação
+No seu **PC Windows** (a "máquina cliente" que vai acessar o site), edite o arquivo hosts:
+```
+C:\Windows\System32\drivers\etc\hosts
+```
+Adicione uma linha apontando um nome amigável para o IP do `web-server`:
+```
+192.168.56.10   bellafemme.local
+```
+Agora você acessa o site digitando:
+```
+http://bellafemme.local:8080
+```
+✅ Isso atende **"Configurar DNS local para a aplicação"**.
+
+> 🎓 Se a disciplina exigir um **servidor de DNS de verdade** (e não apenas o arquivo hosts),
+> instale o `dnsmasq` em uma das VMs:
+> ```bash
+> sudo apt install dnsmasq -y
+> sudo nano /etc/dnsmasq.conf
+> ```
+> Adicione: `address=/bellafemme.local/192.168.56.10`
+> Depois, configure o PC cliente para usar o IP dessa VM como servidor DNS.
+
+---
+
+## 📋 Checklist final da rubrica
+
+- [x] DER apresentado
+- [x] Tabelas suficientes (5)
+- [x] Chaves primárias
+- [x] Chave estrangeira
+- [x] Relacionamento N:N
+- [ ] Listagem de diretórios proibida → `.htaccess` (configure `AllowOverride All`)
+- [ ] Aplicação na porta 8080 → editar `httpd.conf` / `ports.conf`
+- [ ] DNS local configurado → arquivo `hosts` ou `dnsmasq`
+- [ ] Banco com IP fixo → Netplan na VM do banco
+- [ ] App e banco em máquinas separadas → 2 VMs
+- [x] Layout com PHP + Bootstrap
+- [x] Template com PHP
+- [x] Bootstrap (Navbar, Carousel, Cards, Badges)
+- [x] Conexão com banco de dados
+- [x] Dados do banco exibidos na tela
+- [x] IF, WHILE, FOREACH
+- [x] Array estruturado (Tech Forge)
+- [x] Funções de processamento
+- [x] Parâmetros e return
+- [x] Pesquisa/filtro
+- [x] Validação com if/else
